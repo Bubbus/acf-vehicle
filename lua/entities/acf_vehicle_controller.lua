@@ -20,6 +20,16 @@ function ENT:Initialize()
 	
 	self.Inputs = Wire_CreateInputs( self, { "X", "Y", "Z", "Pitch", "Yaw", "Roll", "Fov", "ZNear", "ZFar" } );
 
+	self.Vehicle = NULL;
+
+	self.VehicleACFTable = {
+		origin = Vector( 0, 0, 0 ),
+		angles = Angle( 0, 0, 0 ),
+		fov = 0,
+		znear = 0,
+		zfar = 0
+	};
+
 end
 
 function ENT:LinkEnt( pod )
@@ -34,13 +44,7 @@ function ENT:LinkEnt( pod )
 
 	if( !self.Vehicle.ACFTable ) then
 
-		self.Vehicle.ACFTable = {
-			origin = Vector( 0, 0, 0 ),
-			angles = Angle( 0, 0, 0 ),
-			fov = 0,
-			znear = 0,
-			zfar = 0
-		};
+		self:UpdateVehicle();
 
 	end
 
@@ -52,7 +56,7 @@ end
 
 function ENT:UnlinkEnt()
 
-	self.Vehicle = nil;
+	self.Vehicle = NULL;
 
 	WireLib.SendMarks(self, {});
 
@@ -62,76 +66,73 @@ end
 
 function ENT:TriggerInput( k, v )
 
-	if( !IsValid( self.Vehicle ) ) then return end
-	if( !self.Vehicle.ACFTable ) then return end
-
 	if( k == "X" ) then
 
-		self.Vehicle.ACFTable.origin.x = tonumber( v );
+		self.VehicleACFTable.origin.x = tonumber( v );
 
 	elseif( k == "Y" ) then
 
-		self.Vehicle.ACFTable.origin.y = tonumber( v );	
+		self.VehicleACFTable.origin.y = tonumber( v );	
 
 	elseif( k == "Z" ) then
 
-		self.Vehicle.ACFTable.origin.z = tonumber( v );	
+		self.VehicleACFTable.origin.z = tonumber( v );	
 
 	elseif( k == "Pitch" ) then
 
-		self.Vehicle.ACFTable.angles.pitch = tonumber( v );	
+		self.VehicleACFTable.angles.pitch = tonumber( v );	
 
 	elseif( k == "Yaw" ) then
 
-		self.Vehicle.ACFTable.angles.yaw = tonumber( v );	
+		self.VehicleACFTable.angles.yaw = tonumber( v );	
 
 	elseif( k == "Roll" ) then
 
-		self.Vehicle.ACFTable.angles.roll = tonumber( v );	
+		self.VehicleACFTable.angles.roll = tonumber( v );	
 
 	elseif( k == "Fov" ) then
 
-		self.Vehicle.ACFTable.fov = tonumber( v );	
+		self.VehicleACFTable.fov = tonumber( v );	
 
 	elseif( k == "ZNear" ) then
 
-		self.Vehicle.ACFTable.znear = tonumber( v );	
+		self.VehicleACFTable.znear = tonumber( v );	
 
 	elseif( k == "ZFar" ) then
 
-		self.Vehicle.ACFTable.zfar = tonumber( v );
+		self.VehicleACFTable.zfar = tonumber( v );
 
 	end
 
-end
-
-function ENT:BuildDupeInfo()
-
-	local info = self.BaseClass.BuildDupeInfo( self ) or {};
-
-	if( IsValid( self.Vehicle ) ) then
-
-	    info.Vehicle = self.Vehicle:EntIndex();
-	    info.VehicleACFTable = self.Vehicle.ACFTable;
-
-	end
-
-	return info;
+	self:UpdateVehicle();
 
 end
 
-function ENT:ApplyDupeInfo( ply, ent, info, GetEntByID )
+function ENT:UpdateVehicle()
 
-	self.BaseClass.ApplyDupeInfo( self, ply, ent, info, GetEntByID );
+	if( !IsValid( self.Vehicle ) ) then return end
 
-	self.Vehicle = GetEntByID( info.Vehicle );
-
-	if( IsValid( self.Vehicle ) ) then
-
-		self.Vehicle.ACFTable = info.VehicleACFTable;
-
-	end
+	self.Vehicle.ACFTable = self.VehicleACFTable;
 
 end
 
-duplicator.RegisterEntityClass( "acf_vehicle_controller", WireLib.MakeWireEnt, "Data", "Vehicle", "VehicleACFTable" );
+function MakeACF_VehicleController( pl, Pos, Angle, Model, VehicleACFTable )
+
+	local controller = ents.Create( "acf_vehicle_controller" );
+
+	if( !IsValid( controller ) ) then return end
+
+	controller:SetModel( Model );
+	controller:SetPos( Pos );
+	controller:SetAngles( Angle );
+	controller:Spawn();
+
+	controller.VehicleACFTable = VehicleACFTable;
+
+	controller:UpdateVehicle();
+
+	return controller;
+
+end
+
+duplicator.RegisterEntityClass( "acf_vehicle_controller", MakeACF_VehicleController, "Pos", "Angle", "Model", "VehicleACFTable" );
