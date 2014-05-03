@@ -41,6 +41,7 @@ function ENT:LinkEnt( pod )
 	end
 
 	self.Vehicle = pod;
+	self.VehicleID = pod:EntIndex();
 
 	if( !self.Vehicle.ACFTable ) then
 
@@ -116,7 +117,7 @@ function ENT:UpdateVehicle()
 
 end
 
-function MakeACF_VehicleController( pl, Pos, Angle, Model, VehicleACFTable )
+function MakeACF_VehicleController( pl, Pos, Angle, Model, VehicleID, VehicleACFTable )
 
 	local controller = ents.Create( "acf_vehicle_controller" );
 
@@ -129,29 +130,11 @@ function MakeACF_VehicleController( pl, Pos, Angle, Model, VehicleACFTable )
 
 	controller.VehicleACFTable = VehicleACFTable;
 
-	-- :(
-	local nearby = ents.FindInSphere( Pos, 1024 );
-	local pods = {};
-
-	for k, v in pairs( nearby ) do
-
-		if( IsValid( v ) and v:IsVehicle() ) then
-
-			table.insert( pods, { ent = v, pos = v:GetPos() } );
-
-		end
-
-	end
-
-	table.SortByMember( pods, "pos" );
-
-	local veh = table.GetLastValue( pods );
+	local veh = Entity( VehicleID );
 
 	if( IsValid( veh ) ) then
 
-		controller.Vehicle = veh;
-
-		controller:UpdateVehicle();
+		controller:LinkEnt( veh );
 
 	end
 
@@ -159,4 +142,4 @@ function MakeACF_VehicleController( pl, Pos, Angle, Model, VehicleACFTable )
 
 end
 
-duplicator.RegisterEntityClass( "acf_vehicle_controller", MakeACF_VehicleController, "Pos", "Angle", "Model", "VehicleACFTable" );
+duplicator.RegisterEntityClass( "acf_vehicle_controller", MakeACF_VehicleController, "Pos", "Angle", "Model", "VehicleID", "VehicleACFTable" );
