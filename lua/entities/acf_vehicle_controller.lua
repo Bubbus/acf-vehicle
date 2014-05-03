@@ -18,7 +18,18 @@ function ENT:Initialize()
 	self:SetMoveType( MOVETYPE_VPHYSICS );
 	self:SetSolid( SOLID_VPHYSICS );
 	
-	self.Inputs = Wire_CreateInputs( self, { "X", "Y", "Z", "Pitch", "Yaw", "Roll", "Fov", "ZNear", "ZFar" } );
+	self.Inputs = Wire_CreateInputs( self, { 
+		"X", 
+		"Y", 
+		"Z", 
+		-- Angle modifications cause bugs atm
+		--"Pitch", 
+		--"Yaw", 
+		--"Roll", 
+		"Fov", 
+		"ZNear", 
+		"ZFar" 
+	} );
 
 	self.Vehicle = NULL;
 
