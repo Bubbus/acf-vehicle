@@ -14,8 +14,9 @@ WireToolSetup.SetupMax( 5 )
 
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 
-WireToolSetup.SetupLinking(true)
+WireToolSetup.SetupLinking( true )
 
 function TOOL.BuildCPanel(panel)
 	WireDermaExts.ModelSelect(panel, "wire_vehicle_model", list.Get( "Wire_Misc_Tools_Models" ), 1)
 end
+

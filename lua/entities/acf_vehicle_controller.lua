@@ -43,6 +43,12 @@ function ENT:Initialize()
 
 end
 
+function ENT:Setup()
+
+	self:SetOwner( self:GetPlayer() );
+
+end
+
 function ENT:LinkEnt( pod )
 
 	if( !IsValid( pod ) or !pod:IsVehicle() ) then 
@@ -125,6 +131,16 @@ function ENT:UpdateVehicle()
 	if( !IsValid( self.Vehicle ) ) then return end
 
 	self.Vehicle.ACFTable = self.VehicleACFTable;
+
+	local pl = self:GetOwner();
+
+	if( IsValid( pl ) and IsValid( pl:GetVehicle() ) ) then
+		
+		net.Start( "acf_vehicle_update" );
+			net.WriteTable( veh.ACFTable );
+		net.Send( pl );
+
+	end
 
 end
 
