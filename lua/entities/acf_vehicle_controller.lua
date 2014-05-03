@@ -129,7 +129,31 @@ function MakeACF_VehicleController( pl, Pos, Angle, Model, VehicleACFTable )
 
 	controller.VehicleACFTable = VehicleACFTable;
 
-	controller:UpdateVehicle();
+	-- :(
+	local nearby = ents.FindInSphere( Pos, 1024 );
+	local pods = {};
+
+	for k, v in pairs( nearby ) do
+
+		if( IsValid( v ) and v:IsVehicle() ) then
+
+			table.insert( pods, { ent = v, pos = v:GetPos() } );
+
+		end
+
+	end
+
+	table.SortByMember( pods, "pos" );
+
+	local veh = table.GetLastValue( pods );
+
+	if( IsValid( veh ) ) then
+
+		controller.Vehicle = veh;
+
+		controller:UpdateVehicle();
+
+	end
 
 	return controller;
 

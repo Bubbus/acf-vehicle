@@ -117,6 +117,8 @@ if CLIENT then
 
 		end
 
+		return view;
+
 	end );
 
 end
