@@ -10,7 +10,7 @@ if CLIENT then
 end
 
 WireToolSetup.BaseLang()
-WireToolSetup.SetupMax( 1 )
+WireToolSetup.SetupMax( 5 )
 
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 
