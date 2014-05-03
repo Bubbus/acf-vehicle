@@ -112,7 +112,7 @@ function ENT:BuildDupeInfo()
 	if( IsValid( self.Vehicle ) ) then
 
 	    info.Vehicle = self.Vehicle:EntIndex();
-	    info.VehicleACFTable = info.Vehicle.ACFTable;
+	    info.VehicleACFTable = self.Vehicle.ACFTable;
 
 	end
 
