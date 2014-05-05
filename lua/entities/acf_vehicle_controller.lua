@@ -31,6 +31,7 @@ function ENT:Initialize()
 		"ZFar" 
 	} );
 
+	self.Player = NULL;
 	self.Vehicle = NULL;
 
 	self.VehicleACFTable = {
@@ -45,7 +46,9 @@ end
 
 function ENT:Setup()
 
-	self:SetOwner( self:GetPlayer() );
+	self.Player = self:GetPlayer();
+
+	print("ENT:Setup() Player = ".. tostring( self.Player ) );
 
 end
 
@@ -74,6 +77,12 @@ end
 
 function ENT:UnlinkEnt()
 
+	if( IsValid( self.Vehicle ) ) then
+
+		self.Vehicle.ACFTable = nil;
+
+	end
+
 	self.Vehicle = NULL;
 
 	WireLib.SendMarks(self, {});
@@ -82,7 +91,20 @@ function ENT:UnlinkEnt()
 
 end
 
+function ENT:OnRemove()
+
+	if( IsValid( self.Vehicle ) ) then
+
+		self.Vehicle.ACFTable = nil;
+
+	end
+
+end
+
 function ENT:TriggerInput( k, v )
+
+	k = tostring( k );
+	v = tonumber( v );
 
 	if( k == "X" ) then
 
@@ -126,13 +148,25 @@ function ENT:TriggerInput( k, v )
 
 end
 
+function ENT:PostEntityPaste( pl, ent, reatedEntities )
+
+	if( !IsValid( self.Player ) ) then
+
+		self.Player = pl;
+
+	end
+
+end
+
 function ENT:UpdateVehicle()
 
 	if( !IsValid( self.Vehicle ) ) then return end
 
 	self.Vehicle.ACFTable = self.VehicleACFTable;
 
-	local pl = self:GetOwner();
+	local pl = self.Player;
+
+	print("UpdateVehicle: pl = ".. tostring( pl ))
 
 	if( IsValid( pl ) and IsValid( pl:GetVehicle() ) ) then
 		

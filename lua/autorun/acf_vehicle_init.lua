@@ -33,7 +33,15 @@ if CLIENT then
 
 		function GAMEMODE:CalcVehicleView( veh, pl, view )
 
-			return hook.Run( "CalcVehicleView", veh, pl, view );
+			if( IsValid( veh ) and !veh:GetThirdPersonMode() ) then
+
+				return hook.Run( "CalcVehicleView", veh, pl, view );
+
+			else
+
+				return hook.Run( "CalcVehicleThirdPersonView", veh, pl, view );
+
+			end
 
 		end
 
@@ -115,6 +123,46 @@ if CLIENT then
 			-- return overridden view table
 			return override;
 
+		end
+
+		return view;
+
+	end );
+
+	hook.Add( "CalcVehicleThirdPersonView", "ACFCalcVehicleThirdPersonView", function( veh, pl, view )
+
+		if ( veh.GetThirdPersonMode == nil || pl:GetViewEntity() != pl ) then return end
+
+		-- If we're not in third person mode - then get outa here stalker
+		if ( !veh:GetThirdPersonMode() ) then return view end
+
+		-- Don't roll the camera 
+		-- view.angles.roll = 0
+
+		local mn, mx = veh:GetRenderBounds();
+		local radius = (mn - mx):Length();
+		local radius = radius + radius * veh:GetCameraDistance();
+
+		-- Trace back from the original eye position, so we don't clip through walls/objects
+		local TargetOrigin = view.origin + ( view.angles:Forward() * -radius );
+		local WallOffset = 4;
+			  
+		local tr = util.TraceHull( {
+			start	= view.origin,
+			endpos	= TargetOrigin,
+			filter	= function()
+				return false
+			end,
+			mins	= Vector( -WallOffset, -WallOffset, -WallOffset ),
+			maxs	= Vector( WallOffset, WallOffset, WallOffset ),
+		} );
+		
+		view.origin			= tr.HitPos;
+		view.drawviewer		= true;
+
+		-- If the trace hit something, put the camera there.
+		if ( tr.Hit && !tr.StartSolid) then
+			view.origin = view.origin + tr.HitNormal * WallOffset
 		end
 
 		return view;
