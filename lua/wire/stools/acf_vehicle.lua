@@ -6,7 +6,7 @@ if CLIENT then
 	language.Add("Tool.wire_acf_vehicle.name", "ACF Vehicle Controller Tool")
 	language.Add("Tool.wire_acf_vehicle.desc", "Spawn/link a controller.")
 	language.Add("Tool.wire_acf_vehicle.0", "Primary: Create controller. Secondary: Link controller.")
-	language.Add("Tool.wire_acf_vehicle.1", "Now select the ACF Pod to link to.")
+	language.Add("Tool.wire_acf_vehicle.1", "Now select the vehicle to link to.")
 end
 
 WireToolSetup.BaseLang()
