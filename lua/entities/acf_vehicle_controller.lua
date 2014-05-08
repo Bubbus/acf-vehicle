@@ -12,6 +12,20 @@ ENT.WireDebugName = "ACF Vehicle Controller";
 
 if CLIENT then return end
 
+
+local function getDefaultVehicleTable()
+	return {
+			origin = Vector( 0, 0, 0 ),
+			angles = Angle( 0, 0, 0 ),
+			fov = 0,
+			znear = 0,
+			zfar = 0,
+			ent = NULL,
+			poslocal = false
+		};
+end
+
+
 function ENT:Initialize()
 
 	self:PhysicsInit( SOLID_VPHYSICS );
@@ -22,25 +36,21 @@ function ENT:Initialize()
 		"X", 
 		"Y", 
 		"Z", 
+		"Local Pos",
 		-- Angle modifications cause bugs atm
 		--"Pitch", 
 		--"Yaw", 
 		--"Roll", 
 		"Fov", 
 		"ZNear", 
-		"ZFar" 
+		"ZFar",
+		"Entity [ENTITY]"
 	} );
 
 	self.Vehicle = NULL;
-
-	self.VehicleACFTable = {
-		origin = Vector( 0, 0, 0 ),
-		angles = Angle( 0, 0, 0 ),
-		fov = 0,
-		znear = 0,
-		zfar = 0
-	};
-
+	
+	self.VehicleACFTable = getDefaultVehicleTable()
+	
 end
 
 function ENT:Setup()
@@ -98,43 +108,60 @@ end
 function ENT:TriggerInput( k, v )
 
 	k = tostring( k );
-	v = tonumber( v );
+	--v = tonumber( v );
 
+	if not self.VehicleACFTable then
+		self.VehicleACFTable = getDefaultVehicleTable()
+	end
+	
+	
 	if( k == "X" ) then
 
-		self.VehicleACFTable.origin.x = v;
+		self.VehicleACFTable.origin.x = tonumber( v );
 
 	elseif( k == "Y" ) then
 
-		self.VehicleACFTable.origin.y = v;	
+		self.VehicleACFTable.origin.y = tonumber( v );	
 
 	elseif( k == "Z" ) then
 
-		self.VehicleACFTable.origin.z = v;	
+		self.VehicleACFTable.origin.z = tonumber( v );	
 
 	elseif( k == "Pitch" ) then
 
-		self.VehicleACFTable.angles.pitch = v;	
+		self.VehicleACFTable.angles.pitch = tonumber( v );	
 
 	elseif( k == "Yaw" ) then
 
-		self.VehicleACFTable.angles.yaw = v;	
+		self.VehicleACFTable.angles.yaw = tonumber( v );	
 
 	elseif( k == "Roll" ) then
 
-		self.VehicleACFTable.angles.roll = v;	
+		self.VehicleACFTable.angles.roll = tonumber( v );	
 
 	elseif( k == "Fov" ) then
 
-		self.VehicleACFTable.fov = v;	
+		self.VehicleACFTable.fov = tonumber( v );	
 
 	elseif( k == "ZNear" ) then
 
-		self.VehicleACFTable.znear = v;	
+		self.VehicleACFTable.znear = tonumber( v );	
 
 	elseif( k == "ZFar" ) then
 
-		self.VehicleACFTable.zfar = v;
+		self.VehicleACFTable.zfar = tonumber( v );
+		
+	elseif( k == "Local Pos" ) then
+
+		self.VehicleACFTable.poslocal = tobool( v );
+		
+	elseif( k == "Entity" ) then
+	
+		if IsValid(v) and v:GetOwner() == self:GetOwner() then
+			self.VehicleACFTable.ent = v;
+		else
+			self.VehicleACFTable.ent = NULL;
+		end
 
 	end
 
@@ -142,17 +169,19 @@ function ENT:TriggerInput( k, v )
 
 end
 
+
+
 function ENT:UpdateVehicle()
 
 	if( !IsValid( self.Vehicle ) ) then return end
 
 	self.Vehicle.ACFTable = self.VehicleACFTable;
 
-	local pl = self:GetPlayer();
+	local pl = self.Vehicle:GetDriver()
 
-	if( IsValid( pl ) and IsValid( pl:GetVehicle() ) ) then
+	if( IsValid( pl ) ) then
 		
-		local veh = pl:GetVehicle();
+		local veh = self.Vehicle;
 		local tbl = veh.ACFTable or {};
 
 		net.Start( "acf_vehicle_update" );
@@ -175,8 +204,8 @@ function MakeACF_VehicleController( pl, Pos, Angle, Model, VehicleACFTable )
 	controller:SetAngles( Angle );
 	controller:Spawn();
 
-	controller.VehicleACFTable = VehicleACFTable;
-
+	controller.VehicleACFTable = VehicleACFTable or getDefaultVehicleTable();
+	
 	return controller;
 
 end
