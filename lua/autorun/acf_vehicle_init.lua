@@ -9,8 +9,11 @@ if SERVER then
 
 		if( IsValid( veh ) and IsValid( pl ) and veh.ACFTable ) then
 
+			local tbl = veh.ACFTable or {};
+
 			net.Start( "acf_vehicle_update" );
-				net.WriteTable( veh.ACFTable );
+				net.WriteEntity( veh );
+				net.WriteTable( tbl );
 			net.Send( pl );
 
 		end
@@ -21,11 +24,18 @@ end
 
 if CLIENT then
 
+	ACFVehicleTable = {};
+
 	net.Receive( "acf_vehicle_update", function( len )
 
-		local new = net.ReadTable();
+		local ent = net.ReadEntity();
+		local tbl = net.ReadTable();
 
-		ACFVehicleTable = new or {};
+		if( IsValid( ent ) ) then
+
+			ACFVehicleTable[ ent ] = tbl;
+
+		end
 
 	end );
 
@@ -49,10 +59,10 @@ if CLIENT then
 
 	hook.Add( "CalcVehicleView", "ACFCalcVehicleView", function( veh, pl, view )
 
-		if( IsValid( veh ) and IsValid( pl ) and ACFVehicleTable ) then
+		if( IsValid( veh ) and IsValid( pl ) and ACFVehicleTable[ veh ] ) then
 
 			-- fetch acf_vehicle_controller values from the vehicle
-			local acf = ACFVehicleTable;
+			local acf = ACFVehicleTable[ veh ];
 
 			-- setup our new view table
 			local new = {};

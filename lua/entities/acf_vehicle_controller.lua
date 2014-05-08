@@ -152,8 +152,12 @@ function ENT:UpdateVehicle()
 
 	if( IsValid( pl ) and IsValid( pl:GetVehicle() ) ) then
 		
+		local veh = pl:GetVehicle();
+		local tbl = veh.ACFTable or {};
+
 		net.Start( "acf_vehicle_update" );
-			net.WriteTable( self.Vehicle.ACFTable );
+			net.WriteEntity( veh );
+			net.WriteTable( tbl );
 		net.Send( pl );
 
 	end
