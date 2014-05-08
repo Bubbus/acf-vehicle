@@ -31,7 +31,6 @@ function ENT:Initialize()
 		"ZFar" 
 	} );
 
-	self.Player = NULL;
 	self.Vehicle = NULL;
 
 	self.VehicleACFTable = {
@@ -46,10 +45,6 @@ end
 
 function ENT:Setup()
 
-	self.Player = self:GetPlayer();
-
-	print("ENT:Setup() Player = ".. tostring( self.Player ) );
-
 end
 
 function ENT:LinkEnt( pod )
@@ -61,7 +56,6 @@ function ENT:LinkEnt( pod )
 	end
 
 	self.Vehicle = pod;
-	self.VehicleID = pod:EntIndex();
 
 	if( !self.Vehicle.ACFTable ) then
 
@@ -108,53 +102,43 @@ function ENT:TriggerInput( k, v )
 
 	if( k == "X" ) then
 
-		self.VehicleACFTable.origin.x = tonumber( v );
+		self.VehicleACFTable.origin.x = v;
 
 	elseif( k == "Y" ) then
 
-		self.VehicleACFTable.origin.y = tonumber( v );	
+		self.VehicleACFTable.origin.y = v;	
 
 	elseif( k == "Z" ) then
 
-		self.VehicleACFTable.origin.z = tonumber( v );	
+		self.VehicleACFTable.origin.z = v;	
 
 	elseif( k == "Pitch" ) then
 
-		self.VehicleACFTable.angles.pitch = tonumber( v );	
+		self.VehicleACFTable.angles.pitch = v;	
 
 	elseif( k == "Yaw" ) then
 
-		self.VehicleACFTable.angles.yaw = tonumber( v );	
+		self.VehicleACFTable.angles.yaw = v;	
 
 	elseif( k == "Roll" ) then
 
-		self.VehicleACFTable.angles.roll = tonumber( v );	
+		self.VehicleACFTable.angles.roll = v;	
 
 	elseif( k == "Fov" ) then
 
-		self.VehicleACFTable.fov = tonumber( v );	
+		self.VehicleACFTable.fov = v;	
 
 	elseif( k == "ZNear" ) then
 
-		self.VehicleACFTable.znear = tonumber( v );	
+		self.VehicleACFTable.znear = v;	
 
 	elseif( k == "ZFar" ) then
 
-		self.VehicleACFTable.zfar = tonumber( v );
+		self.VehicleACFTable.zfar = v;
 
 	end
 
 	self:UpdateVehicle();
-
-end
-
-function ENT:PostEntityPaste( pl, ent, reatedEntities )
-
-	if( !IsValid( self.Player ) ) then
-
-		self.Player = pl;
-
-	end
 
 end
 
@@ -164,21 +148,19 @@ function ENT:UpdateVehicle()
 
 	self.Vehicle.ACFTable = self.VehicleACFTable;
 
-	local pl = self.Player;
-
-	print("UpdateVehicle: pl = ".. tostring( pl ))
+	local pl = self:GetPlayer();
 
 	if( IsValid( pl ) and IsValid( pl:GetVehicle() ) ) then
 		
 		net.Start( "acf_vehicle_update" );
-			net.WriteTable( veh.ACFTable );
+			net.WriteTable( self.Vehicle.ACFTable );
 		net.Send( pl );
 
 	end
 
 end
 
-function MakeACF_VehicleController( pl, Pos, Angle, Model, VehicleID, VehicleACFTable )
+function MakeACF_VehicleController( pl, Pos, Angle, Model, VehicleACFTable )
 
 	local controller = ents.Create( "acf_vehicle_controller" );
 
@@ -191,16 +173,42 @@ function MakeACF_VehicleController( pl, Pos, Angle, Model, VehicleID, VehicleACF
 
 	controller.VehicleACFTable = VehicleACFTable;
 
-	local veh = Entity( VehicleID );
-
-	if( IsValid( veh ) ) then
-
-		controller:LinkEnt( veh );
-
-	end
-
 	return controller;
 
 end
 
-duplicator.RegisterEntityClass( "acf_vehicle_controller", MakeACF_VehicleController, "Pos", "Angle", "Model", "VehicleID", "VehicleACFTable" );
+duplicator.RegisterEntityClass( "acf_vehicle_controller", MakeACF_VehicleController, "Pos", "Angle", "Model", "VehicleACFTable" );
+
+function ENT:BuildDupeInfo()
+
+	local info = self.BaseClass.BuildDupeInfo( self ) or {};
+
+	if( IsValid( self.Vehicle ) ) then
+
+		info.VehicleID = self.Vehicle:EntIndex();
+
+	end
+
+	return info;
+
+end
+
+function ENT:ApplyDupeInfo( pl, ent, info, GetEntByID )
+
+	self.BaseClass.ApplyDupeInfo( self, pl, ent, info, GetEntByID );
+
+	if( !IsValid( self:GetPlayer() ) ) then
+
+		self:SetPlayer( pl );
+
+	end
+
+	veh = GetEntByID( info.VehicleID );
+
+	if( IsValid( veh ) ) then
+
+		self:LinkEnt( veh );
+
+	end
+
+end
