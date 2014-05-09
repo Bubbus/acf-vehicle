@@ -102,7 +102,11 @@ if CLIENT then
 
 			if( new.origin ) then
 
-				override.origin = override.origin + new.origin;
+				local ent = IsValid(acf.ent) and acf.ent or veh
+				local viewbasis = ent:GetPos();
+				local viewoffset = acf.poslocal and WorldToLocal(new.origin, Angle(), Vector(0,0,0), -acf.ent:GetAngles()) or new.origin;
+
+				override.origin = viewbasis + viewoffset;
 
 			end
 
@@ -112,21 +116,21 @@ if CLIENT then
 
 			end
 
-			if( new.fov ) then
+			if( new.fov and new.fov > 0 and new.fov < 180 ) then
 
-				override.fov = override.fov + new.fov;
-
-			end
-
-			if( new.znear ) then
-
-				override.znear = override.znear + new.znear;
+				override.fov = new.fov;
 
 			end
 
-			if( new.zfar ) then
+			if( new.znear and new.znear ~= 0 ) then
 
-				override.zfar = override.zfar + new.zfar;
+				override.znear = new.znear;
+
+			end
+
+			if( new.zfar and new.zfar ~= 0 ) then
+
+				override.zfar = new.zfar;
 
 			end
 
